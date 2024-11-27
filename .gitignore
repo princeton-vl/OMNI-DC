@@ -1,0 +1,11 @@
+*.npy
+*.png
+**/__pycache__/
+
+checkpoints
+experiments
+datasets
+apex
+
+src/pretrained
+src_bkup
