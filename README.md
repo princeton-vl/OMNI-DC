@@ -17,10 +17,10 @@
   </p>
 </p>
 
-<h3 align="center"><a href="">Paper</a>  · </a><a href="">Project</a> </a></h3>
+<h3 align="center"><a href="https://arxiv.org/abs/2411.19278">Paper</a>  · </a><a href="">Project</a> </a></h3>
 
 <p align="center">
-  <a href="">
+  <a href="https://arxiv.org/abs/2411.19278">
     <img src="./figures/teaser.png" alt="Logo" width="98%">
   </a>
 </p>
@@ -88,7 +88,7 @@ uniformat_release
 
 
 
-We also provide instructions on how to process the original datasets to get them, check [this link](src/robust_dc_protocol/README.md):  
+We also provide instructions on how to process the original datasets to get these npy files, check [this link](src/robust_dc_protocol/README.md):  
 
 #### Testing
 ```
@@ -126,8 +126,12 @@ sh training_scripts/train_full.sh
 ```
 
 ## Citation 
-
-
-
-
-
+If you find our work helpful please consider citing our paper:
+```
+@article{zuo2024omni,
+   title={OMNI-DC: Highly Robust Depth Completion with Multiresolution Depth Integration},
+   author={Zuo, Yiming and Yang, Willow and Ma, Zeyu and Deng, Jia},
+   journal={arXiv preprint arXiv:2411.19278},
+   year={2024}
+}
+```
