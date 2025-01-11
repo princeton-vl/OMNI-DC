@@ -17,7 +17,7 @@
   </p>
 </p>
 
-<h3 align="center"><a href="https://arxiv.org/abs/2411.19278">Paper</a>  · </a><a href="">Project</a> </a></h3>
+<h3 align="center"><a href="https://arxiv.org/abs/2411.19278">Paper</a>  · </a><a href="https://zuoym15.github.io/OMNI-DC-Homepage/">Project</a> </a></h3>
 
 <p align="center">
   <a href="https://arxiv.org/abs/2411.19278">
