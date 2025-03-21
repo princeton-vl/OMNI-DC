@@ -111,7 +111,11 @@ https://drive.google.com/drive/folders/1z2sOkIJHtg1zTYiSRhZRzff0AANprx4O?usp=sha
 #### Download checkpoints
 Download from 
 ```
+# v1.0
 https://drive.google.com/file/d/1SBRfdhozd-3j6uorjKOMgYGmrd578NvG/view?usp=sharing
+
+# v1.1
+https://drive.google.com/file/d/1ssJYFB3rQD5JEYgG7W6tRJg1hpQKvqPD/view?usp=sharing
 ```
 and put it under the `checkpoints` folder.
 
