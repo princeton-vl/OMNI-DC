@@ -28,6 +28,50 @@
 ## TL;DR
 We present a depth completion model that works well on unseen datasets and various depth patterns (zero-shot). It can be used to regularize Gaussian Splatting models to achieve better rendering quality, or work with LiDARs for dense mapping.
 
+## Change Logs
+- 3/21/2025 v1.1 relased
+
+## V1.1
+
+We find that concatenating the output of Depth Anyting v2 to the sparse depth map improves the results consistently, especially when the input depth is sparse (error reduced by 50% on NYU with 5 points compared to v1.0). 
+
+Download the [Depth Anything checkpoint](https://huggingface.co/depth-anything/Depth-Anything-V2-Large/resolve/main/depth_anything_v2_vitl.pth?download=true) to `src/depth_models/depth_anything_v2/checkpoints`.
+Usage is the same as v1.0. See `testing_scripts/test_v1.1.sh` for an example.
+<details>
+  <summary>Detailed Accuracy Comparison Between v1.0 and v1.1</summary>
+  
+  ETH3D: RMSE/REL; KITTIDC: RMSE/MAE
+
+| Method  | ETH3D_SfM_In | ETH3D_SfM_Out | KITTIDC_64 | KITTIDC_16 | KITTIDC_8 |
+|----------|----------|----------|----------|----------|----------|
+| v1.0 | 0.605/0.090 | 1.069/0.053 | **1.191/0.270** | 1.682/0.441 | 2.058/0.597 |
+| v1.1 | **0.488/0.061** | **1.092/0.035** | 1.235/0.276 | **1.659/0.430** | **1.897/0.546** |
+
+VOID: RMSE/MAE
+
+| Method  | VOID_1500 | VOID_500 | VOID_150 |
+|----------|----------|----------|----------|
+| v1.0 |  0.555/0.150 | 0.551/0.164 | 0.650/0.211 |  
+| v1.1 |  **0.540/0.143** | **0.512/0.144** | **0.581/0.171** |
+
+NYU: RMSE/REL
+
+| Method  | NYU_500 | NYU_200 | NYU_100 | NYU_50 | NYU_5 |
+|----------|----------|----------|----------|----------|----------|
+| v1.0 | **0.111/0.014** | 0.147/0.021 | 0.180/0.029 | 0.225/0.041 | 0.536/0.142 |
+| v1.1 | 0.112/**0.014**  | **0.143/0.019**  | **0.167/0.024** | **0.193/0.029** | **0.330/0.070** |
+
+Virtual Depth Pattens (Avg on 4 datasets): RMSE/REL
+
+| Method  | 0.7% | 0.1% | 0.03% | 5% Noise |  10% Noise |
+|----------|----------|----------|----------|----------|----------|
+| v1.0 | 0.135/0.010 | 0.211/0.020 | 0.289/0.034 | 0.141/**0.010** | 0.147/0.011 | 
+| v1.1 | **0.126/0.009** | **0.172/0.016** | **0.213/0.025** | **0.130/0.010** | **0.134/0.010** |
+| **Method** | **ORB** | **SIFT** | **LiDAR-64** | **LiDAR-16** | **LiDAR-8** |
+| v1.0 | 0.247/0.045 | 0.211/0.037 | 0.121/**0.008** | 0.164/0.014 | 0.231/0.023 |
+| v1.1 | **0.176/0.028** | **0.161/0.024** | **0.114/0.008** | **0.146/0.012** | **0.180/0.017** |
+</details>
+
 ## Environment Setup
 We recommend creating a python enviroment with anaconda.
 ```shell
@@ -102,7 +146,7 @@ sh testing_scripts/test_void_nyu.sh
 ```
 ## Test on Your Own Dataset
 
-We recommend writing a dataloader to save your own dataset into the uniformat. You will need to provide an RGB image and a sparse depth map (with 0 indicating invalid pixels). A good starting point is the [ibims dataloader](src/data/ibims.py). 
+We recommend writing a dataloader to save your own dataset into the unified format we use (uniformat). You will need to provide an RGB image and a sparse depth map (with 0 indicating invalid pixels). A good starting point is the [ibims dataloader](src/data/ibims.py). 
 
 Then follow the instructions [here](src/robust_dc_protocol/README.md) to convert your dataset into uniformat. Specifically, look into `src/robust_dc_protocol/save_uniformat_dataset.py`.
 

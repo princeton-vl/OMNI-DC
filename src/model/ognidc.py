@@ -1,5 +1,6 @@
 import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).parent))
 
 from backbone import Backbone
@@ -10,6 +11,16 @@ import torch.nn.functional as F
 import sys
 
 from optim_layer.optim_layer import DepthGradOptimLayer
+
+from depth_models.depth_anything_v2.depth_anything_v2.dpt import DepthAnythingV2
+from align_utils import resize_image, depth2disparity, disparity2depth, align_least_square, align_single_res
+
+dav2_model_configs = {
+    'vits': {'encoder': 'vits', 'features': 64, 'out_channels': [48, 96, 192, 384]},
+    'vitb': {'encoder': 'vitb', 'features': 128, 'out_channels': [96, 192, 384, 768]},
+    'vitl': {'encoder': 'vitl', 'features': 256, 'out_channels': [256, 512, 1024, 1024]},
+    'vitg': {'encoder': 'vitg', 'features': 384, 'out_channels': [1536, 1536, 1536, 1536]}
+}
 
 def upsample_depth(depth, mask, r=8):
     """ Upsample depth field [H/r, W/r, 2] -> [H, W, 2] using convex combination """
@@ -32,12 +43,33 @@ class OGNIDC(nn.Module):
         self.args = args
         self.GRU_iters = self.args.GRU_iters
 
-        self.backbone = Backbone(args, mode=self.args.backbone_mode)
+        if args.load_dav2:
+            depth_input_channels = 2
+        else:
+            depth_input_channels = 1
+
+        self.backbone = Backbone(args, mode=self.args.backbone_mode, depth_input_channels=depth_input_channels)
 
         self.hdim = args.gru_hidden_dim
         self.cdim = args.gru_context_dim
 
         self.resolution = args.num_resolution
+
+        encoder = 'vitl'
+
+        if self.args.load_dav2:
+
+            self.depth_module = DepthAnythingV2(**dav2_model_configs[encoder])
+            self.depth_module.load_state_dict(
+                torch.load(f'./depth_models/depth_anything_v2/checkpoints/depth_anything_v2_{encoder}.pth',
+                           map_location='cpu'))
+            self.depth_module = self.depth_module.eval()
+
+            # freeze foundation model
+            for param in self.depth_module.parameters():
+                param.requires_grad = False
+
+            self.depth_module_input_size = 518
 
         # NLSPN
         self.prop_time = args.prop_time
@@ -63,13 +95,14 @@ class OGNIDC(nn.Module):
         # DySPN
 
         self.downsample_rate = args.backbone_output_downsample_rate
-        self.update_block = BasicUpdateBlock(args=self.args, resolution=self.resolution, hidden_dim=self.hdim, mask_r=self.downsample_rate,
+        self.update_block = BasicUpdateBlock(args=self.args, resolution=self.resolution, hidden_dim=self.hdim,
+                                             mask_r=self.downsample_rate,
                                              conf_min=self.args.conf_min)
 
     def initialize_depth(self, sparse_depth):
         log_depth_init = torch.zeros_like(sparse_depth)
-        log_depth_grad_init = torch.zeros_like(sparse_depth).repeat(1, 2 * self.resolution, 1, 1) # B x 2 x H x W
-    
+        log_depth_grad_init = torch.zeros_like(sparse_depth).repeat(1, 2 * self.resolution, 1, 1)  # B x 2 x H x W
+
         return log_depth_init, log_depth_grad_init
 
     def forward(self, sample):
@@ -135,12 +168,39 @@ class OGNIDC(nn.Module):
 
         if self.args.training_depth_random_shift_range > 0.0 and self.training:
             batch_size = rgb.shape[0]
-            random_shift = torch.empty(batch_size).uniform_(-0.5, 0.5).cuda() * self.args.training_depth_random_shift_range
+            random_shift = torch.empty(batch_size).uniform_(-0.5,
+                                                            0.5).cuda() * self.args.training_depth_random_shift_range
             dep_network_input = dep_network_input + random_shift.reshape(batch_size, 1, 1, 1)
+
+        if self.args.load_dav2:
+            if self.training:
+                dav2_depth = sample['mono_dep']
+            else:
+                rgb_resized = resize_image(rgb, size=self.depth_module_input_size)  # B x 3 x 518 x W_resized
+
+                # relative depth
+                depth_pred_raw = self.depth_module.forward(rgb_resized).unsqueeze(1)  # B x 1 x 518 x W_resized
+                depth_pred_raw = F.relu(depth_pred_raw)
+
+                # resize back
+                depth_pred_raw = F.interpolate(depth_pred_raw, (H, W), mode="bilinear",
+                                               align_corners=True)  # B x 1 x H x W
+
+                # normalize to [0,1]
+                _min = torch.quantile(depth_pred_raw.reshape(B, -1), 0.02, dim=1).reshape(B, 1, 1, 1)
+                _max = torch.quantile(depth_pred_raw.reshape(B, -1), 0.98, dim=1).reshape(B, 1, 1, 1)
+
+                dav2_depth = 1.0 * (depth_pred_raw - _min) / (_max - _min)
+
+            dep_network_input = torch.cat([dep_network_input, dav2_depth], dim=1)
+        else:
+            dep_network_input = dep_network_input
 
         # backbone
         assert self.args.pred_context_feature
-        _, spn_guide, spn_confidence, context, confidence_input, confidence_output = self.backbone(rgb, dep_network_input, depth_pattern)
+        _, spn_guide, spn_confidence, context, confidence_input, confidence_output = self.backbone(rgb,
+                                                                                                   dep_network_input,
+                                                                                                   depth_pattern)
 
         if confidence_input is None:
             confidence_input = torch.ones_like(dep)  # B x 1 x H x W
@@ -177,10 +237,10 @@ class OGNIDC(nn.Module):
                 log_depth_pred_whitened = log_depth_pred - log_depth_pred_median.reshape(B, 1, 1, 1)
 
             net, up_mask, delta_log_depth_grad, weights_depth_grad, weights_input = self.update_block(net, inp,
-                                                                                          log_depth_pred_whitened,
-                                                                                          log_depth_grad_pred,
-                                                                                          K_downsampled
-                                                                                          )
+                                                                                                      log_depth_pred_whitened,
+                                                                                                      log_depth_grad_pred,
+                                                                                                      K_downsampled
+                                                                                                      )
             # print('depth grad pred', log_depth_grad_pred)
             log_depth_grad_pred = log_depth_grad_pred + delta_log_depth_grad
 
@@ -195,7 +255,7 @@ class OGNIDC(nn.Module):
                                                                weights_depth_grad,
                                                                confidence_input * weights_input,
                                                                resolution,
-                                                               log_depth_pred, 
+                                                               log_depth_pred,
                                                                b_init,
                                                                self.args.integration_alpha,
                                                                1e-5, 5000)

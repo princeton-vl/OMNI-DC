@@ -90,6 +90,10 @@ parser.add_argument('--precomputed_alignment_method',
                     type=str,
                     default='disparity',
                     help='path to json file')
+parser.add_argument('--load_dav2',
+                    type=int,
+                    default=False,
+                    help='path to json file')
 
 # Hardware
 parser.add_argument('--seed',

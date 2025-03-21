@@ -43,7 +43,7 @@ def convt_bn_relu(ch_in, ch_out, kernel, stride=1, padding=0, output_padding=0,
 
 
 class Backbone(nn.Module):
-    def __init__(self, args, mode='rgbd'):
+    def __init__(self, args, mode='rgbd', depth_input_channels=1):
         super(Backbone, self).__init__()
         self.args = args
         self.mode = mode
@@ -53,7 +53,7 @@ class Backbone(nn.Module):
         if mode == 'rgbd':
             self.conv1_rgb = conv_bn_relu(3, 48, kernel=3, stride=1, padding=1,
                                           bn=False)
-            self.conv1_dep = conv_bn_relu(1, 16, kernel=3, stride=1, padding=1,
+            self.conv1_dep = conv_bn_relu(depth_input_channels, 16, kernel=3, stride=1, padding=1,
                                           bn=False)
             self.conv1 = conv_bn_relu(64, 64, kernel=3, stride=1, padding=1,
                                       bn=False)
