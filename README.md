@@ -36,7 +36,7 @@ We present a depth completion model that works well on unseen datasets and vario
 We find that concatenating the output of Depth Anyting v2 to the sparse depth map improves the results consistently, especially when the input depth is sparse (error reduced by 50% on NYU with 5 points compared to v1.0). 
 
 Download the [Depth Anything checkpoint](https://huggingface.co/depth-anything/Depth-Anything-V2-Large/resolve/main/depth_anything_v2_vitl.pth?download=true) to `src/depth_models/depth_anything_v2/checkpoints`.
-Usage is the same as v1.0. See `testing_scripts/test_v1.1.sh` for an example.
+Usage is the same as v1.0. See `testing_scripts/test_v1.1.sh` for an example. Checkpoint can be downloaded [here](https://drive.google.com/file/d/1ssJYFB3rQD5JEYgG7W6tRJg1hpQKvqPD/view?usp=sharing).
 <details>
   <summary>Detailed Accuracy Comparison Between v1.0 and v1.1</summary>
   
@@ -44,8 +44,8 @@ Usage is the same as v1.0. See `testing_scripts/test_v1.1.sh` for an example.
 
 | Method  | ETH3D_SfM_In | ETH3D_SfM_Out | KITTIDC_64 | KITTIDC_16 | KITTIDC_8 |
 |----------|----------|----------|----------|----------|----------|
-| v1.0 | 0.605/0.090 | 1.069/0.053 | **1.191/0.270** | 1.682/0.441 | 2.058/0.597 |
-| v1.1 | **0.488/0.061** | **1.092/0.035** | 1.235/0.276 | **1.659/0.430** | **1.897/0.546** |
+| v1.0 | 0.605/0.090 | **1.069**/0.053 | **1.191/0.270** | 1.682/0.441 | 2.058/0.597 |
+| v1.1 | **0.488/0.061** | 1.092/**0.035** | 1.235/0.276 | **1.659/0.430** | **1.897/0.546** |
 
 VOID: RMSE/MAE
 
