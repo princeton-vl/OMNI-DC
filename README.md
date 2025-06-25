@@ -2,7 +2,7 @@
 
 <p align="center">
 
-  <h1 align="center">OMNI-DC: Highly Robust Depth Completion with Multiresolution Depth Integration</h1>
+  <h1 align="center">[ICCV 25] OMNI-DC: Highly Robust Depth Completion with Multiresolution Depth Integration</h1>
   <p align="center">
     <a href="https://zuoym15.github.io/"><strong>Yiming Zuo</strong></a>
     ·
