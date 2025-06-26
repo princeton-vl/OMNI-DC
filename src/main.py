@@ -38,10 +38,6 @@ from apex import amp
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
-import sys
-sys.path.append('/n/fs/vl/check_overheat')
-import check_overheat
-
 # Minimize randomness
 def init_seed(seed=None):
     if seed is None:
@@ -304,10 +300,6 @@ def train(gpu, args):
         # re-sample the sample indices after each epoch
         if gpu == 0:
             data_train.refresh_indices()
-
-        # if check_overheat.pause_needed():
-        #     # do any prep needed to pause e.g. save model ckpt weights
-        #     check_overheat.pause()
 
         # Val
         torch.set_grad_enabled(False)

@@ -29,7 +29,9 @@
 We present a depth completion model that works well on unseen datasets and various depth patterns (zero-shot). It can be used to regularize Gaussian Splatting models to achieve better rendering quality, or work with LiDARs for dense mapping.
 
 ## Change Logs
-- 3/21/2025 v1.1 relased
+- 6/25/2025 Added a demo script for easy testing on custom data.
+- 6/25/2025 Paper accepted to ICCV 2025!
+- 3/21/2025 v1.1 relased.
 
 ## V1.1
 
@@ -104,10 +106,6 @@ Download these `.pt` files to `src/pretrained`:
 https://drive.google.com/drive/folders/1z2sOkIJHtg1zTYiSRhZRzff0AANprx4O?usp=sharing
 ```
 
-
-
-## Reproduce Results in the Paper 
-
 #### Download checkpoints
 Download from 
 ```
@@ -118,6 +116,18 @@ https://drive.google.com/file/d/1SBRfdhozd-3j6uorjKOMgYGmrd578NvG/view?usp=shari
 https://drive.google.com/file/d/1ssJYFB3rQD5JEYgG7W6tRJg1hpQKvqPD/view?usp=sharing
 ```
 and put it under the `checkpoints` folder.
+
+## Demo
+Run 
+```
+cd src
+sh testing_script/demo.sh 
+```
+We prepare example images under the `figures` folder. Results are saved under `experiments`.
+
+To run with your own data, prepare an rgb image and the corresponding sparse depth map as an npy file: 1) with the same resolution as the image; 2) 0 values indicate unknown depth.
+
+## Reproduce Results in the Paper 
 
 #### Prepare the datasets
 
