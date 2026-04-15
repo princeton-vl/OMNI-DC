@@ -102,8 +102,7 @@ def test(args):
     #         print(key_m)
     #         raise KeyError
     #     print('Checkpoint loaded from {}!'.format(args.pretrain))
-
-    # net.eval()
+    
     ########
 
     ######## Default: loading using huggingface ########
@@ -113,6 +112,7 @@ def test(args):
         raise TypeError(args.model, ['OGNIDC', ])
     ########
 
+    net.eval()
     net = nn.DataParallel(net)
     
     t_rgb = T.Compose([
