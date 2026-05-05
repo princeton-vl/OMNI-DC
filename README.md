@@ -131,7 +131,7 @@ Download the [Depth Anything checkpoint](https://huggingface.co/depth-anything/D
 Run 
 ```
 cd src
-sh testing_script/demo.sh 
+sh testing_scripts/demo.sh 
 ```
 Note: Do NOT directly run `demo.py`. The model configs are different than default and can cause shape mismatch when loading the checkpoints.
 
